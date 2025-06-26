@@ -46,10 +46,15 @@ make install && make playground
 | Command              | Description                                                                                 |
 | -------------------- | ------------------------------------------------------------------------------------------- |
 | `make install`       | Install all required dependencies using uv                                                  |
+{%- if cookiecutter.settings.get("commands", {}).get("extra", {}) %}
+{%- for cmd_name, cmd_value in cookiecutter.settings.get("commands", {}).get("extra", {}).items() %}
+| `make {{ cmd_name }}`       | {% if cmd_value is mapping %}{% if cmd_value.description %}{{ cmd_value.description }}{% else %}{% if cookiecutter.deployment_target in cmd_value %}{{ cmd_value[cookiecutter.deployment_target] }}{% else %}{{ cmd_value.command if cmd_value.command is string else "" }}{% endif %}{% endif %}{% else %}{{ cmd_value }}{% endif %} |
+{%- endfor %}
+{%- endif %}
 {%- if cookiecutter.deployment_target == 'cloud_run' %}
 | `make playground`    | Launch local development environment with backend and frontend{%- if "adk" in cookiecutter.tags %} - leveraging `adk web` command. {%- endif %}|
 | `make backend`       | Deploy agent to Cloud Run |
-| `make local-backend`       | Deploy agent to Cloud Run |
+| `make local-backend` | Launch local development server |
 {%- if cookiecutter.deployment_target == 'cloud_run' %}
 {%- if cookiecutter.agent_name == 'live_api' %}
 | `make ui`       | Launch Agent Playground front-end only |
@@ -84,7 +89,7 @@ Here’s the recommended workflow for local development:
 2.  **Start the Backend Server:**
     Open a terminal and run:
     ```bash
-    make backend
+    make local-backend
     ```
     The backend is ready when you see `INFO:     Application startup complete.` Wait for this message before starting the frontend.
 
@@ -96,7 +101,7 @@ Here’s the recommended workflow for local development:
     ```bash
     export VERTEXAI=false
     export GOOGLE_API_KEY="your-google-api-key" # Replace with your actual key
-    make backend
+    make local-backend
     ```
     Ensure `GOOGLE_API_KEY` is set correctly in your environment.
     </details>
@@ -130,7 +135,7 @@ To run the agent using Google Cloud Shell:
 2.  **Start the Backend:**
     Open a *new* Cloud Shell tab. Set your project: `gcloud config set project [PROJECT_ID]`. Then run:
     ```bash
-    make backend
+    make local-backend
     ```
 
 3.  **Configure Backend Web Preview:**
@@ -153,13 +158,13 @@ This template follows a "bring your own agent" approach - you focus on your busi
 1. **Prototype:** Build your Generative AI Agent using the intro notebooks in `notebooks/` for guidance. Use Vertex AI Evaluation to assess performance.
 2. **Integrate:** Import your agent into the app by editing `app/agent.py`.
 3. **Test:** Explore your agent functionality using the Streamlit playground with `make playground`. The playground offers features like chat history, user feedback, and various input types, and automatically reloads your agent on code changes.
-4. **Deploy:** Set up and initiate the CI/CD pipelines, customizing tests as necessary. Refer to the [deployment section](#deployment) for comprehensive instructions. For streamlined infrastructure deployment, simply run `agent-starter-pack setup-cicd`. Check out the [`agent-starter-pack setup-cicd` CLI command](https://github.com/GoogleCloudPlatform/agent-starter-pack/blob/main/docs/cli/setup_cicd.md). Currently only supporting Github.
+4. **Deploy:** Set up and initiate the CI/CD pipelines, customizing tests as necessary. Refer to the [deployment section](#deployment) for comprehensive instructions. For streamlined infrastructure deployment, simply run `uvx agent-starter-pack setup-cicd`. Check out the [`agent-starter-pack setup-cicd` CLI command](https://googlecloudplatform.github.io/agent-starter-pack/cli/setup_cicd.html). Currently only supporting Github.
 5. **Monitor:** Track performance and gather insights using Cloud Logging, Tracing, and the Looker Studio dashboard to iterate on your application.
 {% endif %}
 
 ## Deployment
 
-> **Note:** For a streamlined one-command deployment of the entire CI/CD pipeline and infrastructure using Terraform, you can use the [`agent-starter-pack setup-cicd` CLI command](https://github.com/GoogleCloudPlatform/agent-starter-pack/blob/main/docs/cli/setup_cicd.md). Currently only supporting Github.
+> **Note:** For a streamlined one-command deployment of the entire CI/CD pipeline and infrastructure using Terraform, you can use the [`agent-starter-pack setup-cicd` CLI command](https://googlecloudplatform.github.io/agent-starter-pack/cli/setup_cicd.html). Currently only supporting Github.
 
 ### Dev Environment
 
